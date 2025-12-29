@@ -12,7 +12,6 @@ final class GameSession: ObservableObject {
 
     @Published private(set) var profile: PlayerProfile
     @Published private(set) var leaderboard: [LeaderboardEntry]
-    
     @Published var lastHighlightedEntryID: UUID?
 
     private let storage: PlayerProfileStoring
@@ -30,75 +29,28 @@ final class GameSession: ObservableObject {
         self.lastHighlightedEntryID = nil
     }
     
-    
-    
-//    func submitScore(_ score: Int) {
-//            let new = LeaderboardEntry(
-//                avatarImageName: profile.avatarImageName,
-//                name: profile.name,
-//                score: score
-//            )
-//
-//            var updated = leaderboard
-//            updated.append(new)
-//            updated.sort { $0.score > $1.score }
-//            updated = Array(updated.prefix(20))
-//
-//            leaderboard = updated
-//            leaderboardStore.save(updated)
-//        }
-    
-    
-//    @discardableResult
-//        func submitScore(_ score: Int, limit: Int = 20) -> Bool {
-//            let entry = LeaderboardEntry(
-//                avatarImageName: profile.avatarImageName,
-//                name: profile.name,
-//                score: score
-//            )
-//
-//            var updated = leaderboard
-//            updated.append(entry)
-//            updated.sort { $0.score > $1.score }
-//
-//            let inTop = updated.firstIndex(where: { $0.id == entry.id }) ?? Int.max
-//            updated = Array(updated.prefix(limit))
-//
-//            // якщо ми були нижче топа — після prefix наш entry міг відпасти
-//            let actuallyInTop = updated.contains(where: { $0.id == entry.id })
-//
-//            leaderboard = updated
-//            leaderboardStore.save(updated)
-//
-//            return actuallyInTop && inTop < limit
-//        }
-    
     @discardableResult
-        func submitScore(_ score: Int, limit: Int = 20) -> Bool {
-            let entry = LeaderboardEntry(
-                avatarImageName: profile.avatarImageName,
-                name: profile.name,
-                score: score
-            )
+    func submitScore(_ score: Int, limit: Int = 15) -> Bool {
+        let entry = LeaderboardEntry(
+            avatarImageName: profile.avatarImageName,
+            name: profile.name,
+            score: score
+        )
 
-            var updated = leaderboard
-            updated.append(entry)
-            updated.sort { $0.score > $1.score }
-            updated = Array(updated.prefix(limit))
+        var updated = leaderboard
+        updated.append(entry)
+        updated.sort { $0.score > $1.score }
+        updated = Array(updated.prefix(limit))
 
-            let didEnterTop = updated.contains(where: { $0.id == entry.id })
+        let didEnterTop = updated.contains(where: { $0.id == entry.id })
 
-            leaderboard = updated
-            leaderboardStore.save(updated)
+        leaderboard = updated
+        leaderboardStore.save(updated)
 
-            // ⬇️ запам’ятовуємо ТІЛЬКИ якщо реально попав у таблицю
-            lastHighlightedEntryID = didEnterTop ? entry.id : nil
+        lastHighlightedEntryID = didEnterTop ? entry.id : nil
 
-            return didEnterTop
-        }
-
-    
-    
+        return didEnterTop
+    }
 
     func setName(_ name: String) {
         profile.name = name
@@ -125,49 +77,44 @@ final class GameSession: ObservableObject {
     }
     
     // MARK: - Premium avatars
+    func isAvatarUnlocked(_ name: String) -> Bool {
+        profile.unlockedAvatars.contains(name)
+    }
 
-        func isAvatarUnlocked(_ name: String) -> Bool {
-            profile.unlockedAvatars.contains(name)
-        }
+    func unlockAvatar(_ name: String) {
+        profile.unlockedAvatars.insert(name)
+        storage.save(profile)
+    }
 
-        func unlockAvatar(_ name: String) {
-            profile.unlockedAvatars.insert(name)
-            storage.save(profile)
-        }
-
-        @discardableResult
-        func purchaseAvatarIfNeeded(name: String, cost: Int) -> Bool {
-            if isAvatarUnlocked(name) {
-                setAvatar(name)
-                return true
-            }
-
-            guard spendCoins(cost) else { return false }
-
-            unlockAvatar(name)
+    @discardableResult
+    func purchaseAvatarIfNeeded(name: String, cost: Int) -> Bool {
+        if isAvatarUnlocked(name) {
             setAvatar(name)
             return true
         }
-    
-    
+
+        guard spendCoins(cost) else { return false }
+
+        unlockAvatar(name)
+        setAvatar(name)
+        return true
+    }
     
     func isLevelUnlocked(_ level: Int) -> Bool {
-            profile.unlockedLevels.contains(level)
-        }
+        profile.unlockedLevels.contains(level)
+    }
 
-        func markLevelCompleted(_ level: Int, maxLevel: Int = 9) {
-            profile.completedLevels.insert(level)
-
-            let next = level + 1
-            if next <= maxLevel {
-                profile.unlockedLevels.insert(next)
-            }
-            storage.save(profile)
+    func markLevelCompleted(_ level: Int, maxLevel: Int = 9) {
+        profile.completedLevels.insert(level)
+        let next = level + 1
+        if next <= maxLevel {
+            profile.unlockedLevels.insert(next)
         }
-    
+        storage.save(profile)
+    }
     
     func setSettings(_ settings: GameSettings) {
-            profile.settings = settings
-            storage.save(profile)
-        }
+        profile.settings = settings
+        storage.save(profile)
+    }
 }

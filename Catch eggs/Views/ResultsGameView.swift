@@ -42,31 +42,6 @@ struct ResultsGameView: View {
             .padding(.horizontal, 6)
     }
     
-//    private var results: some View {
-//        VStack {
-//            ZStack {
-//                RoundedRectangle(cornerRadius: 12)
-//                    .fill(Color.green)
-//                    .frame(height: 55)
-//                    .padding(.horizontal, 30)
-//                
-//                Text("SCORE \(score)")
-//                    .font(.rubikMonoOne(.regular, size: 25))
-//                    .foregroundColor(.white)
-//            }
-//            
-//            ZStack {
-//                RoundedRectangle(cornerRadius: 12)
-//                    .fill(Color.green)
-//                    .frame(height: 55)
-//                    .padding(.horizontal, 30)
-//                
-//                Text("BEST \(score)")
-//                    .font(.rubikMonoOne(.regular, size: 25))
-//                    .foregroundColor(.white)
-//            }
-//        }
-//    }
     private var results: some View {
             VStack {
                 resultRow(title: "SCORE", value: score)

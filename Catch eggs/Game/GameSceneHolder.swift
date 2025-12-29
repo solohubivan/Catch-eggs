@@ -18,16 +18,16 @@ final class GameSceneHolder: ObservableObject {
     @Published var timeLeft: Int = 0
     
     private var timer: Timer?
-    private let totalTime: Int = 20
+    private let totalTime: Int = 60
     
     lazy var gameScene: GameScene = {
         let scene = GameScene()
         scene.scaleMode = .resizeFill
         scene.backgroundColor = .clear
-        
-        scene.onScore = { [weak self] in
+
+        scene.onCatch = { [weak self] kind in
             DispatchQueue.main.async {
-                self?.score += 1
+                self?.score += kind.scoreDelta
             }
         }
         

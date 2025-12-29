@@ -13,10 +13,10 @@ struct GoldCoinsView: View {
 
     var body: some View {
         HStack(spacing: -20) {
-            Text("\(amount)")
-                .font(.rubikMonoOne(.regular, size: 16))
+            Text("\(amount.formatted(.number.grouping(.never)))")
+                .font(.rubikMonoOne(.regular, size: 15))
                 .foregroundStyle(.white)
-                .padding(.horizontal, 26)
+                .padding(.horizontal, 25)
                 .padding(.vertical, 6)
                 .background(
                     RoundedRectangle(cornerRadius: 18)

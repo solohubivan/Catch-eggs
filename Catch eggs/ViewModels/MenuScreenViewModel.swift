@@ -5,7 +5,7 @@
 //  Created by Ivan Solohub on 22.12.2025.
 //
 
-import SwiftUI
+import Foundation
 import Combine
 
 final class MenuScreenViewModel: ObservableObject {

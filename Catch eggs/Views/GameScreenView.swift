@@ -9,43 +9,37 @@ import SwiftUI
 import SpriteKit
 
 struct GameScreenView: View {
-    
+
     let level: Int
-    
+
     @EnvironmentObject private var session: GameSession
-    @StateObject private var holder = GameSceneHolder()
+
+    @StateObject private var holder: GameSceneHolder
+    @StateObject private var viewModel: GameScreenViewModel
+
     @State private var showMainMenu: Bool = false
     @State private var showGameLevels: Bool = false
-    @State private var lastCrashedEggs: Int = 0
-    @State private var didSubmitScore = false
     
-    private var finishState: GameFinishState {
-        holder.crashedEggs < 3 ? .win : .lose
+    init(level: Int) {
+        self.level = level
+        let holder = GameSceneHolder()
+        _holder = StateObject(wrappedValue: holder)
+        _viewModel = StateObject(wrappedValue: GameScreenViewModel(holder: holder))
     }
-    
-    private var isGameActive: Bool {
-        !holder.isPausedUI && !holder.isGameOver
-    }
-    
+
     var body: some View {
         ZStack {
             gameLayer
             overlaysLayer
-            if isGameActive {
+            if viewModel.isGameActive {
                 hudLayer
             }
         }
         .onAppear {
-            startLevel()
-            lastCrashedEggs = holder.crashedEggs
+            viewModel.startLevel(level)
         }
         .onChange(of: holder.crashedEggs) { newValue in
-            guard newValue > lastCrashedEggs, newValue <= 2 else {
-                lastCrashedEggs = newValue
-                return
-            }
-            playBrokenEggHaptic()
-            lastCrashedEggs = newValue
+            viewModel.handleCrashedEggsChange(newValue)
         }
         .fullScreenCover(isPresented: $showMainMenu) {
             MenuScreenView()
@@ -70,7 +64,7 @@ struct GameScreenView: View {
             controls
         }
     }
-    
+
     private var brokenEggsRow: some View {
         HStack(alignment: .center, spacing: 0) {
             brokenEggsView
@@ -111,7 +105,7 @@ struct GameScreenView: View {
                 holder.resumeGame()
             },
             onRestart: animate {
-                restartLevel()
+                viewModel.restartLevel(level)
             },
             onHome: animate {
                 showMainMenu = true
@@ -119,74 +113,32 @@ struct GameScreenView: View {
         )
     }
 
-//    private var resultsOverlay: some View {
-//        ResultsGameView(
-//            state: finishState,
-//            score: holder.score,
-//            bestScore: session.bestScore,
-//            onRestart: animate {
-//                restartLevel()
-//            },
-//            onHome: animate {
-//                showMainMenu = true
-//            },
-//            onNext: animate {
-//                if finishState == .win {
-//                    session.markLevelCompleted(level)
-//                }
-//                showGameLevels = true
-//            }
-//        )
-//        .transition(.opacity)
-//    }
-    
-    
-    
-//    private var resultsOverlay: some View {
-//        ResultsGameView(
-//            state: finishState,
-//            score: holder.score,
-//            bestScore: session.bestScore,
-//            onRestart: animate { restartLevel() },
-//            onHome: animate { showMainMenu = true },
-//            onNext: animate {
-//                if finishState == .win {
-//                    session.markLevelCompleted(level)
-//                }
-//                showGameLevels = true
-//            }
-//        )
-//        .transition(.opacity)
-//        .onAppear {
-//            guard !didSubmitScore else { return }
-//            didSubmitScore = true
-//            session.submitScore(holder.score)
-//        }
-//    }
-    
-    
     private var resultsOverlay: some View {
         ResultsGameView(
-            state: finishState,
+            state: viewModel.finishState,
             score: holder.score,
             bestScore: session.bestScore,
-            onRestart: animate { restartLevel() },
-            onHome: animate { showMainMenu = true },
+            onRestart: animate {
+                viewModel.restartLevel(level)
+            },
+            onHome: animate {
+                showMainMenu = true
+            },
             onNext: animate {
-                if finishState == .win {
+                if viewModel.finishState == .win {
                     session.markLevelCompleted(level)
                 }
                 showGameLevels = true
             }
         )
         .onAppear {
-            guard !didSubmitScore else { return }
-            _ = session.submitScore(holder.score)
-            didSubmitScore = true
+            viewModel.submitScoreIfNeeded(score: holder.score) { score in
+                _ = session.submitScore(score)
+            }
         }
         .transition(.opacity)
     }
-    
+
     // MARK: - UI components
     private var topBar: some View {
         HStack {
@@ -199,7 +151,7 @@ struct GameScreenView: View {
         .padding(.horizontal, 25)
         .frame(maxHeight: .infinity, alignment: .top)
     }
-    
+
     private var infoTexts: some View {
         VStack(alignment: .leading) {
             Text("Score: \(holder.score)")
@@ -208,7 +160,7 @@ struct GameScreenView: View {
         .font(.system(size: 18, weight: .bold))
         .foregroundStyle(.white)
     }
-    
+
     private var pauseButton: some View {
         Button {
             holder.pauseGame()
@@ -222,25 +174,35 @@ struct GameScreenView: View {
 
     private var controls: some View {
         HStack {
-            holdButton(systemName: "arrow.left.circle",
-                       onPress: { holder.gameScene.setMoveDirection(-1) },
-                       onRelease: { holder.gameScene.setMoveDirection(0) })
+            holdButton(
+                systemName: "arrow.left.circle",
+                onPress: {
+                    holder.gameScene.setMoveDirection(-1)
+                },
+                onRelease: {
+                    holder.gameScene.setMoveDirection(0)
+                }
+            )
 
             Spacer()
 
-            holdButton(systemName: "arrow.right.circle",
-                       onPress: { holder.gameScene.setMoveDirection(1) },
-                       onRelease: { holder.gameScene.setMoveDirection(0) })
+            holdButton(
+                systemName: "arrow.right.circle",
+                onPress: { holder.gameScene.setMoveDirection(1) },
+                onRelease: { holder.gameScene.setMoveDirection(0) }
+            )
         }
         .padding(.horizontal, 50)
         .padding(.bottom, 30)
         .frame(maxHeight: .infinity, alignment: .bottom)
     }
 
-    // MARK: - Private helper
-    private func holdButton(systemName: String,
-                            onPress: @escaping () -> Void,
-                            onRelease: @escaping () -> Void) -> some View {
+    // MARK: - Private helpers (UI-only)
+    private func holdButton(
+        systemName: String,
+        onPress: @escaping () -> Void,
+        onRelease: @escaping () -> Void
+    ) -> some View {
         Image(systemName: systemName)
             .resizable()
             .frame(width: 100, height: 100)
@@ -254,29 +216,23 @@ struct GameScreenView: View {
                 perform: {}
             )
     }
-    
-    private func startLevel() {
-        didSubmitScore = false
-        holder.startLevel(level)
-    }
-    
-    private func restartLevel() {
-        didSubmitScore = false
-        holder.restartGame()
-        holder.startLevel(level)
-    }
-    
+
     private func animate(_ action: @escaping () -> Void) -> () -> Void {
         { withAnimation(.easeOut(duration: 0.25)) { action() } }
     }
-    
-    private func playBrokenEggHaptic() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.prepare()
-        generator.impactOccurred()
-    }
 }
 
-#Preview {
+#Preview("GameScreen") {
+    let defaults = UserDefaults(suiteName: "gameScreen")!
+
+    let profileStore = UserDefaultsPlayerProfileStore(defaults: defaults)
+    let leaderboardStore = UserDefaultsLeaderboardStore(defaults: defaults)
+
+    let session: GameSession = GameSession(
+        storage: profileStore,
+        leaderboardStore: leaderboardStore
+    )
+
     GameScreenView(level: 1)
+        .environmentObject(session)
 }

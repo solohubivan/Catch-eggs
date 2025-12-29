@@ -30,23 +30,32 @@ enum GameLevel {
             return LevelConfig(
                 id: 1,
                 waves: [
+//                    EggWaveConfigModel(
+//                        id: "l1wave1",
+//                        eggsCount: 30,
+//                        interval: 2.5,
+//                        startDelay: 0,
+//                        speedRange: 140...180,
+//                        trajectories: [.straight],
+//                        allowedEggKinds: [.plain]
+//                    ),
+//                    EggWaveConfigModel(
+//                        id: "l1wave2",
+//                        eggsCount: 5,
+//                        interval: 7,
+//                        startDelay: 10,
+//                        speedRange: 80...100,
+//                        trajectories: [.parabola, .diagonal, .straight],
+//                        allowedEggKinds: [.magic]
+//                    )
                     EggWaveConfigModel(
-                        id: "l1wave1",
-                        eggsCount: 30,
-                        interval: 2.5,
+                        id: "l1waveTest",
+                        eggsCount: 20,
+                        interval: 4,
                         startDelay: 0,
-                        speedRange: 140...180,
-                        trajectories: [.straight],
-                        allowedEggKinds: [.plain]
-                    ),
-                    EggWaveConfigModel(
-                        id: "l1wave2",
-                        eggsCount: 5,
-                        interval: 7,
-                        startDelay: 10,
-                        speedRange: 80...100,
+                        speedRange: 160...190,
                         trajectories: [.parabola, .diagonal, .straight],
-                        allowedEggKinds: [.magic]
+                        allowedEggKinds: [.dynamite, .magic, .sun, .plain]
                     )
                 ]
             )
@@ -253,7 +262,7 @@ enum GameLevel {
         }
     }
 
-    static func from(_ number: Int) -> GameLevel? {
+    static func level(for number: Int) -> GameLevel? {
         switch number {
         case 1: return .level1
         case 2: return .level2

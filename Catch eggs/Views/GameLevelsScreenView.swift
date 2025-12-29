@@ -11,11 +11,9 @@ struct GameLevelsScreenView: View {
     
     @Binding var isPresented: Bool
     @EnvironmentObject private var session: GameSession
-    
+    @StateObject private var viewModel = GameLevelsScreenViewModel()
     @State var showGame: Bool = false
-    @State private var selectedLevel: Int = 1
     
-    private let levels = Array(1...9)
     private let gridColumns: [GridItem] = Array(
         repeating: GridItem(.fixed(100), spacing: 16),
         count: 3
@@ -23,26 +21,26 @@ struct GameLevelsScreenView: View {
     
     var body: some View {
         ZStack {
-            screenView
+            if showGame {
+                GameScreenView(level: viewModel.selectedLevel)
+                    .transition(.opacity)
+            } else {
+                levelsView
+            }
         }
     }
     
-    @ViewBuilder
-    private var screenView: some View {
-        if showGame {
-            GameScreenView(level: selectedLevel)
-                .transition(.opacity)
-        } else {
-            ZStack {
-                backgroundImage
-                
-                VStack {
-                    topBar
-                    titleText
-                    Spacer()
-                    levelsButtons
-                    Spacer()
-                }
+    // MARK: - UI elements
+    private var levelsView: some View {
+        ZStack {
+            backgroundImage
+            
+            VStack {
+                topBar
+                titleText
+                Spacer()
+                levelsButtons
+                Spacer()
             }
         }
     }
@@ -62,54 +60,6 @@ struct GameLevelsScreenView: View {
         .padding(.horizontal, 25)
     }
     
-    private var levelsButtons: some View {
-            LazyVGrid(columns: gridColumns, spacing: 16) {
-                ForEach(levels, id: \.self) { level in
-                    levelCell(level)
-                }
-            }
-            .padding(.top, -30)
-        }
-
-        private func levelCell(_ level: Int) -> some View {
-            let unlocked = session.isLevelUnlocked(level)
-            return Button {
-                guard unlocked else { return }
-                selectedLevel = level
-                showGame = true
-            } label: {
-                ZStack {
-                    Image("emptyUserImage")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 100)
-
-                    Text("\(level)")
-                        .font(.rubikMonoOne(.regular, size: 22))
-                        .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.6), radius: 2, x: 0, y: 2)
-
-                    if !unlocked {
-                        lockOverlay
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-            .disabled(!unlocked)
-            .opacity(unlocked ? 1 : 0.85)
-        }
-
-        private var lockOverlay: some View {
-            ZStack {
-                Color.black.opacity(0.45)
-                Image(systemName: "lock.fill")
-                    .font(.title2)
-                    .foregroundColor(.yellow)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .padding(6)
-        }
-    
     private var backButton: some View {
         Button {
             isPresented = false
@@ -121,34 +71,74 @@ struct GameLevelsScreenView: View {
     }
     
     private var titleText: some View {
-        Text("CHANGE LEVEL")
+        Text(viewModel.titletext)
             .font(.rubikMonoOne(.regular, size: 28))
             .foregroundStyle(.white)
     }
     
-    @ViewBuilder
-    private func menuButton(
-        title: String,
-        fontSize: CGFloat = 22,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
+    private var levelsButtons: some View {
+        LazyVGrid(columns: gridColumns, spacing: 16) {
+            ForEach(viewModel.levels, id: \.self) { level in
+                configureLevelButton(level)
+            }
+        }
+        .padding(.top, -30)
+    }
+    
+    private var lockOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+
+            Image(systemName: "lock.fill")
+                .font(.title)
+                .foregroundColor(.yellow)
+                .shadow(radius: 2)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(6)
+    }
+    
+    // MARK: - Private helper
+    private func configureLevelButton(_ level: Int) -> some View {
+        let unlocked = session.isLevelUnlocked(level)
+
+        return Button {
+            guard unlocked else { return }
+            viewModel.select(level: level)
+            showGame = true
+        } label: {
             ZStack {
                 Image("emptyUserImage")
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 100)
-                Text(title)
-                    .font(.rubikMonoOne(.regular, size: fontSize))
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.6), radius: 2, x: 0, y: 2)
-                    .minimumScaleFactor(0.1)
-                    .lineLimit(2)
+
+                if unlocked {
+                    Text("\(level)")
+                        .font(.rubikMonoOne(.regular, size: 22))
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.6), radius: 2, x: 0, y: 2)
+                } else {
+                    lockOverlay
+                }
             }
         }
+        .buttonStyle(.plain)
+        .disabled(!unlocked)
+        .opacity(unlocked ? 1 : 0.85)
     }
 }
 
 #Preview {
+    let defaults = UserDefaults(suiteName: "previewGameLevels")!
+
+    let profileStore = UserDefaultsPlayerProfileStore(defaults: defaults)
+    let leaderboardStore = UserDefaultsLeaderboardStore(defaults: defaults)
+
+    let session: GameSession = GameSession(
+        storage: profileStore,
+        leaderboardStore: leaderboardStore
+    )
     GameLevelsScreenView(isPresented: .constant(true))
+        .environmentObject(session)
 }
