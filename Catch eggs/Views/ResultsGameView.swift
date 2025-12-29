@@ -43,24 +43,24 @@ struct ResultsGameView: View {
     }
     
     private var results: some View {
-            VStack {
-                resultRow(title: "SCORE", value: score)
-                resultRow(title: "BEST", value: bestScore)
-            }
+        VStack {
+            resultRow(title: "SCORE", value: score)
+            resultRow(title: "BEST", value: bestScore)
         }
+    }
 
-        private func resultRow(title: String, value: Int) -> some View {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.green)
-                    .frame(height: 55)
-                    .padding(.horizontal, 30)
+    private func resultRow(title: String, value: Int) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.green)
+                .frame(height: 55)
+                .padding(.horizontal, 30)
 
-                Text("\(title) \(value.formatted(.number.grouping(.never)))")
-                    .font(.rubikMonoOne(.regular, size: 25))
-                    .foregroundColor(.white)
-            }
+            Text("\(title) \(value.formatted(.number.grouping(.never)))")
+                .font(.rubikMonoOne(.regular, size: 25))
+                .foregroundColor(.white)
         }
+    }
     
     private var navigationButtons: some View {
         HStack {

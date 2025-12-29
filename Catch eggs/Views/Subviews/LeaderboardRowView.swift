@@ -9,7 +9,6 @@ import SwiftUI
 struct LeaderboardRowView: View {
 
     let entry: LeaderboardEntry
-    
     let isHighlighted: Bool
     
     @State private var pulse = false
@@ -51,42 +50,29 @@ struct LeaderboardRowView: View {
             }
     }
     
-//    private var userName: some View {
-//        Text(entry.name)
-//            .font(.rubikMonoOne(.regular, size: 19))
-//            .foregroundStyle(.white)
-//            .lineLimit(1)
-//            .minimumScaleFactor(0.7)
-//    }
-//    
-//    private var score: some View {
-//        Text("\(entry.score.formatted(.number.grouping(.never)))")
-//            .font(.rubikMonoOne(.regular, size: 19))
-//            .foregroundStyle(.white)
-//    }
     private var userName: some View {
-            Text(entry.name)
-                .font(.rubikMonoOne(.regular, size: 19))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .scaleEffect(isHighlighted ? (pulse ? 1.08 : 0.95) : 1.0)
-                .opacity(isHighlighted ? (pulse ? 1.0 : 0.65) : 1.0)
-                .animation(
-                    isHighlighted ? .easeInOut(duration: 0.75).repeatForever(autoreverses: true) : .default,
-                    value: pulse
-                )
-        }
+        Text(entry.name)
+            .font(.rubikMonoOne(.regular, size: 19))
+            .foregroundStyle(.white)
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .scaleEffect(isHighlighted ? (pulse ? 1.08 : 0.95) : 1.0)
+            .opacity(isHighlighted ? (pulse ? 1.0 : 0.65) : 1.0)
+            .animation(
+                isHighlighted ? .easeInOut(duration: 0.75).repeatForever(autoreverses: true) : .default,
+                value: pulse
+            )
+    }
 
-        private var score: some View {
-            Text("\(entry.score.formatted(.number.grouping(.never)))")
-                .font(.rubikMonoOne(.regular, size: 19))
-                .foregroundStyle(.white)
-                .scaleEffect(isHighlighted ? (pulse ? 1.10 : 0.96) : 1.0)
-                .opacity(isHighlighted ? (pulse ? 1.0 : 0.65) : 1.0)
-                .animation(
-                    isHighlighted ? .easeInOut(duration: 0.75).repeatForever(autoreverses: true) : .default,
-                    value: pulse
-                )
-        }
+    private var score: some View {
+        Text("\(entry.score.formatted(.number.grouping(.never)))")
+            .font(.rubikMonoOne(.regular, size: 19))
+            .foregroundStyle(.white)
+            .scaleEffect(isHighlighted ? (pulse ? 1.10 : 0.96) : 1.0)
+            .opacity(isHighlighted ? (pulse ? 1.0 : 0.65) : 1.0)
+            .animation(
+                isHighlighted ? .easeInOut(duration: 0.75).repeatForever(autoreverses: true) : .default,
+                value: pulse
+            )
+    }
 }

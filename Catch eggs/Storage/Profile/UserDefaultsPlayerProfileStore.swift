@@ -9,25 +9,16 @@ import Foundation
 
 final class UserDefaultsPlayerProfileStore: PlayerProfileStoring {
 
-    private let defaults: UserDefaults
-    private let key: String
-
-    init(defaults: UserDefaults = .standard, key: String = "playerProfile") {
-        self.defaults = defaults
-        self.key = key
-    }
+    private let store = UserDefaultsCodableStore<PlayerProfile>(
+        key: "playerProfile"
+    )
 
     func load() -> PlayerProfile {
-        guard
-            let data = defaults.data(forKey: key),
-            let profile = try? JSONDecoder().decode(PlayerProfile.self, from: data)
-        else { return .default }
-        return profile
+        store.load(default: .default)
     }
 
     func save(_ profile: PlayerProfile) {
-        guard let data = try? JSONEncoder().encode(profile) else { return }
-        defaults.set(data, forKey: key)
+        store.save(profile)
     }
 
     func update(_ mutate: (inout PlayerProfile) -> Void) -> PlayerProfile {

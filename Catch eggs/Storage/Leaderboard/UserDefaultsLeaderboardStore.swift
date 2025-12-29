@@ -7,26 +7,16 @@
 import Foundation
 
 final class UserDefaultsLeaderboardStore: LeaderboardStoring {
-    private let defaults: UserDefaults
-    private let key: String
 
-    init(defaults: UserDefaults = .standard, key: String = "leaderboard") {
-        self.defaults = defaults
-        self.key = key
-    }
+    private let store = UserDefaultsCodableStore<[LeaderboardEntry]>(
+        key: "leaderboard"
+    )
 
     func load() -> [LeaderboardEntry] {
-        guard
-            let data = defaults.data(forKey: key),
-            let entries = try? JSONDecoder().decode([LeaderboardEntry].self, from: data)
-        else {
-            return LeaderboardEntry.mockTop
-        }
-        return entries
+        store.load(default: LeaderboardEntry.mockTop)
     }
 
     func save(_ entries: [LeaderboardEntry]) {
-        guard let data = try? JSONEncoder().encode(entries) else { return }
-        defaults.set(data, forKey: key)
+        store.save(entries)
     }
 }

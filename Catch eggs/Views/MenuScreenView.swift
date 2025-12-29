@@ -124,10 +124,8 @@ struct MenuScreenView: View {
 }
 
 #Preview("Menu") {
-    let defaults = UserDefaults(suiteName: "previewMenu")!
-
-    let profileStore = UserDefaultsPlayerProfileStore(defaults: defaults)
-    let leaderboardStore = UserDefaultsLeaderboardStore(defaults: defaults)
+    let profileStore = UserDefaultsPlayerProfileStore()
+    let leaderboardStore = UserDefaultsLeaderboardStore()
 
     let session: GameSession = GameSession(
         storage: profileStore,

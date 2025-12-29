@@ -23,33 +23,10 @@ extension PlayerProfile {
     static let `default` = PlayerProfile(
         name: "Player",
         coins: 1000,
-        avatarImageName: "emptyUserImage",
+        avatarImageName: "",
         unlockedAvatars: ["freeAvatarGirl", "freeAvatarBoy"],
         unlockedLevels: [1],
         completedLevels: [],
         settings: .default
     )
 }
-
-
-//extension PlayerProfile {
-//    enum CodingKeys: String, CodingKey {
-//        case name, coins, avatarImageName, unlockedAvatars
-//        case unlockedLevels, completedLevels
-//        case settings
-//    }
-//
-//    init(from decoder: Decoder) throws {
-//        let c = try decoder.container(keyedBy: CodingKeys.self)
-//
-//        name = try c.decodeIfPresent(String.self, forKey: .name) ?? PlayerProfile.default.name
-//        coins = try c.decodeIfPresent(Int.self, forKey: .coins) ?? PlayerProfile.default.coins
-//        avatarImageName = try c.decodeIfPresent(String.self, forKey: .avatarImageName) ?? PlayerProfile.default.avatarImageName
-//        unlockedAvatars = try c.decodeIfPresent(Set<String>.self, forKey: .unlockedAvatars) ?? PlayerProfile.default.unlockedAvatars
-//
-//        unlockedLevels = try c.decodeIfPresent(Set<Int>.self, forKey: .unlockedLevels) ?? PlayerProfile.default.unlockedLevels
-//        completedLevels = try c.decodeIfPresent(Set<Int>.self, forKey: .completedLevels) ?? PlayerProfile.default.completedLevels
-//
-//        settings = try c.decodeIfPresent(GameSettings.self, forKey: .settings) ?? .default
-//    }
-//}

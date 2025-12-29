@@ -16,7 +16,6 @@ struct LeaderboardScreenView: View {
         session.lastHighlightedEntryID
     }
     
-    
     var body: some View {
         ZStack {
             backgroundImage
@@ -54,12 +53,7 @@ struct LeaderboardScreenView: View {
     
     private var leaderboardCard: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.mainMenuBackground.opacity(0.8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.mainManuBorder, lineWidth: 2)
-                )
+            AnimatedMenuCardBackground()
             
             VStack(spacing: 0) {
                 titleText
@@ -91,12 +85,12 @@ struct LeaderboardScreenView: View {
         }
         .listStyle(.plain)
         .background(Color.clear)
+        .padding(.bottom, 10)
     }
-    
 }
 
-//#Preview {
-//    let session = GameSession(storage: UserDefaultsPlayerProfileStore(defaults: .init(suiteName: "previewLeaderboard")!), leaderboardStore: "previewLeaderboard" as! LeaderboardStoring)
-//    LeaderboardScreenView(isPresented: .constant(true))
-//        .environmentObject(session)
-//}
+#Preview {
+    let session = GameSession(storage: UserDefaultsPlayerProfileStore(), leaderboardStore: UserDefaultsLeaderboardStore())
+    LeaderboardScreenView(isPresented: .constant(true))
+        .environmentObject(session)
+}

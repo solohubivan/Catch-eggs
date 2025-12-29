@@ -8,18 +8,15 @@
 import SwiftUI
 
 struct SettingsScreenView: View {
-    
+
     @Binding var isPresented: Bool
     @EnvironmentObject private var session: GameSession
+    @StateObject private var viewModel = SettingsScreenViewModel()
 
-    @State private var soundEnabled = true
-    @State private var notificationsEnabled = true
-    @State private var vibrationEnabled = true
-    
     var body: some View {
         ZStack {
             backgroundImage
-            
+
             VStack {
                 backButton
                 Spacer()
@@ -31,15 +28,17 @@ struct SettingsScreenView: View {
                     .padding(.bottom, 50)
             }
         }
-        .onAppear(perform: loadSettingsFromProfile)
+        .onAppear {
+            viewModel.load(from: session)
+        }
     }
-    
+
     private var backgroundImage: some View {
         Image("menuBackgroundImage")
             .resizable()
             .ignoresSafeArea()
     }
-    
+
     private var backButton: some View {
         HStack {
             Button {
@@ -49,16 +48,17 @@ struct SettingsScreenView: View {
                     .resizable()
                     .frame(width: 80, height: 80)
             }
-            
             Spacer()
         }
         .padding(.leading, 25)
     }
-    
+
     private var settingsView: some View {
         VStack(spacing: 0) {
-            settingsViewTitleText
-            
+            Text(viewModel.settingsTitleText)
+                .font(.rubikMonoOne(.regular, size: 30))
+                .foregroundStyle(.white)
+
             VStack(spacing: 20) {
                 setSound
                 setNotifications
@@ -68,63 +68,42 @@ struct SettingsScreenView: View {
             .padding(.vertical, 50)
         }
         .padding(.vertical, 20)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(.mainMenuBackground.opacity(0.8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.mainManuBorder, lineWidth: 2)
-                )
-        )
-        
+        .background(AnimatedMenuCardBackground())
     }
-    
-    private var settingsViewTitleText: some View {
-        Text("SETTINGS")
-            .font(.rubikMonoOne(.regular, size: 30))
-            .foregroundStyle(.white)
-            
-    }
-    
+
     private var setSound: some View {
         HStack {
-            Text("SOUND")
+            Text(viewModel.soundText)
                 .font(.rubikMonoOne(.regular, size: 20))
                 .foregroundStyle(.white)
-            
             Spacer()
-            
-            CircleSwitch(isOn: $soundEnabled)
+            CircleSwitch(isOn: $viewModel.soundEnabled)
         }
     }
-    
+
     private var setNotifications: some View {
         HStack {
-            Text("NOTIFICATION")
+            Text(viewModel.notificationText)
                 .font(.rubikMonoOne(.regular, size: 18))
                 .foregroundStyle(.white)
-            
             Spacer()
-            
-            CircleSwitch(isOn: $notificationsEnabled)
+            CircleSwitch(isOn: $viewModel.notificationsEnabled)
         }
     }
-    
+
     private var setVibration: some View {
         HStack {
-            Text("VIBRATION")
+            Text(viewModel.vibrationText)
                 .font(.rubikMonoOne(.regular, size: 20))
                 .foregroundStyle(.white)
-            
             Spacer()
-            
-            CircleSwitch(isOn: $vibrationEnabled)
+            CircleSwitch(isOn: $viewModel.vibrationEnabled)
         }
     }
-    
+
     private var saveButton: some View {
         Button {
-            saveSettingsToProfile()
+            viewModel.save(to: session)
             isPresented = false
         } label: {
             Image("saveButtonImage")
@@ -132,26 +111,13 @@ struct SettingsScreenView: View {
                 .scaledToFit()
         }
     }
-    
-    
-    private func loadSettingsFromProfile() {
-            let s = session.profile.settings
-            soundEnabled = s.soundEnabled
-            notificationsEnabled = s.notificationsEnabled
-            vibrationEnabled = s.vibrationEnabled
-        }
-    
-    private func saveSettingsToProfile() {
-            let newSettings = GameSettings(
-                soundEnabled: soundEnabled,
-                notificationsEnabled: notificationsEnabled,
-                vibrationEnabled: vibrationEnabled
-            )
-            session.setSettings(newSettings)
-        }
-
 }
 
-//#Preview {
-//    SettingsScreenView(isPresented: .constant(true))
-//}
+#Preview {
+    let session = GameSession(
+        storage: UserDefaultsPlayerProfileStore(),
+        leaderboardStore: UserDefaultsLeaderboardStore()
+    )
+    SettingsScreenView(isPresented: .constant(true))
+        .environmentObject(session)
+}

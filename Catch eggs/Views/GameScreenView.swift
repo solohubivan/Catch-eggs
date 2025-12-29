@@ -223,10 +223,8 @@ struct GameScreenView: View {
 }
 
 #Preview("GameScreen") {
-    let defaults = UserDefaults(suiteName: "gameScreen")!
-
-    let profileStore = UserDefaultsPlayerProfileStore(defaults: defaults)
-    let leaderboardStore = UserDefaultsLeaderboardStore(defaults: defaults)
+    let profileStore = UserDefaultsPlayerProfileStore()
+    let leaderboardStore = UserDefaultsLeaderboardStore()
 
     let session: GameSession = GameSession(
         storage: profileStore,

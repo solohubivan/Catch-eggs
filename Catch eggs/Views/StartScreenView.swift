@@ -126,7 +126,11 @@ struct StartScreenView: View {
     }
 }
 
-
-//#Preview {
-//    StartScreenView()
-//}
+#Preview {
+    let session = GameSession(
+        storage: UserDefaultsPlayerProfileStore(),
+        leaderboardStore: UserDefaultsLeaderboardStore()
+    )
+    StartScreenView()
+        .environmentObject(session)
+}
