@@ -130,8 +130,6 @@ struct GameLevelsScreenView: View {
 }
 
 #Preview {
-    let defaults = UserDefaults(suiteName: "previewGameLevels")!
-
     let profileStore = UserDefaultsPlayerProfileStore()
     let leaderboardStore = UserDefaultsLeaderboardStore()
 

@@ -168,7 +168,7 @@ struct GameScreenView: View {
             Image("pauseImage")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 80)
+                .frame(width: 50)
         }
     }
 
@@ -197,7 +197,7 @@ struct GameScreenView: View {
         .frame(maxHeight: .infinity, alignment: .bottom)
     }
 
-    // MARK: - Private helpers (UI-only)
+    // MARK: - Private helpers
     private func holdButton(
         systemName: String,
         onPress: @escaping () -> Void,
